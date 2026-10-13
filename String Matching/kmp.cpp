@@ -1,20 +1,50 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-// pi[i] = length of the longest proper prefix of s[0..i] which is also a suffix of s[0..i]
-vector<int> prefix_function(string &s) {
-    int n = s.size();
-    vector<int> pi(n, 0);
-    for (int i = 1; i < n; i++) {
-        int j = pi[i-1];
-        while (j > 0 && s[i] != s[j])
-            j = pi[j-1]; // fall back to the next shorter border
-        if (s[i] == s[j])
+// lps[i] = length of the longest proper prefix of pattern[0..i] which is also a suffix of pattern[0..i]
+// Approach 1 : for loop
+vector<int> computeLPS(const string& pattern) {
+    int m = pattern.size();
+    vector<int> lps(m, 0);
+    for (int i = 1; i < m; i++) {
+        int j = lps[i-1];
+        while (j > 0 && pattern[i] != pattern[j])
+            j = lps[j-1]; // fall back to the next shorter border
+        if (pattern[i] == pattern[j])
             j++;
-        pi[i] = j;
+        lps[i] = j;
     }
-    return pi;
+    return lps;
 }
+
+// Approach 2 : while loop (same O(m), more explicit steps)
+/*
+std::vector<int> computeLPS(const std::string& pattern) {
+    int m = pattern.length();
+    std::vector<int> lps(m, 0);
+    
+    int length = 0; // Length of the previous longest prefix suffix
+    int i = 1;      // lps[0] is always 0
+    
+    while (i < m) {
+        if (pattern[i] == pattern[length]) {
+            length++;
+            lps[i] = length;
+            i++;
+        } else {
+            if (length != 0) {
+                // Fall back to the previous longest prefix suffix
+                length = lps[length - 1];
+            } else {
+                // No match found
+                lps[i] = 0;
+                i++;
+            }
+        }
+    }
+    return lps;
+}
+*/
 
 // Returns 0-based starting indices of all occurrences of pattern s in text t. O(S + T)
 vector<int> kmp(string &s, string &t) {
@@ -22,16 +52,16 @@ vector<int> kmp(string &s, string &t) {
     vector<int> occurrences;
     if (S == 0 || S > T) return occurrences;
 
-    vector<int> pi = prefix_function(s);
+    vector<int> lps = computeLPS(s);
     int j = 0; // number of characters of s matched so far
     for (int i = 0; i < T; i++) {
         while (j > 0 && t[i] != s[j])
-            j = pi[j-1];
+            j = lps[j-1];
         if (t[i] == s[j])
             j++;
         if (j == S) {
             occurrences.push_back(i - S + 1);
-            j = pi[j-1]; // continue searching for overlapping matches
+            j = lps[j-1]; // continue searching for overlapping matches
         }
     }
     return occurrences;
