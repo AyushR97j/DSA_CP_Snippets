@@ -28,7 +28,7 @@ struct fenwick
         i++;
 
         // if(i<1) return;
-        while (i <= maxn)
+        while (i < maxn)
         {
             BIT[i] = BIT[i] + val;
             i = i + (i & -i);
