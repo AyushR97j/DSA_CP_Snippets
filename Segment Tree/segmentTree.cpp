@@ -115,3 +115,119 @@ int main() {
 }
 
 */
+
+
+//Complete code for Range Sum & Point Update & Range Update (Lazy Propagation)
+//Range Update : add val to every element in [l, r]
+/*
+#include <bits/stdc++.h>
+using namespace std;
+
+vector<long long> seg, lazy; // lazy[i] = pending add for every element in node i's range
+vector<long long> arr;
+
+void build(int i, int l, int r) {
+    if (l == r) {
+        seg[i] = arr[l];
+        return;
+    }
+    int mid = (l + r) / 2;
+    build(2*i+1, l, mid);
+    build(2*i+2, mid+1, r);
+    seg[i] = seg[2*i+1] + seg[2*i+2];
+}
+
+// apply pending lazy value of node i to itself and pass it to its children
+void push(int i, int l, int r) {
+    if (lazy[i] != 0) {
+        seg[i] += (r - l + 1) * lazy[i];
+        if (l != r) {
+            lazy[2*i+1] += lazy[i];
+            lazy[2*i+2] += lazy[i];
+        }
+        lazy[i] = 0;
+    }
+}
+
+// add val to every element in [ql, qr]
+void rangeUpdate(int i, int l, int r, int ql, int qr, long long val) {
+    push(i, l, r);
+    if (qr < l || r < ql)
+        return;
+    if (ql <= l && r <= qr) {
+        lazy[i] += val;
+        push(i, l, r);
+        return;
+    }
+    int mid = (l + r) / 2;
+    rangeUpdate(2*i+1, l, mid, ql, qr, val);
+    rangeUpdate(2*i+2, mid+1, r, ql, qr, val);
+    seg[i] = seg[2*i+1] + seg[2*i+2];
+}
+
+// set arr[idx] = val
+void pointUpdate(int i, int l, int r, int idx, long long val) {
+    push(i, l, r);
+    if (l == r) {
+        seg[i] = val;
+        return;
+    }
+    int mid = (l + r) / 2;
+    if (idx <= mid)
+        pointUpdate(2*i+1, l, mid, idx, val);
+    else
+        pointUpdate(2*i+2, mid+1, r, idx, val);
+    push(2*i+1, l, mid);
+    push(2*i+2, mid+1, r);
+    seg[i] = seg[2*i+1] + seg[2*i+2];
+}
+
+// sum of [ql, qr]
+long long query(int i, int l, int r, int ql, int qr) {
+    push(i, l, r);
+    if (qr < l || r < ql)
+        return 0;
+    if (ql <= l && r <= qr)
+        return seg[i];
+    int mid = (l + r) / 2;
+    return query(2*i+1, l, mid, ql, qr) + query(2*i+2, mid+1, r, ql, qr);
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n, q;
+    cin >> n >> q;
+
+    arr.resize(n);
+    for (int i = 0; i < n; i++) cin >> arr[i];
+
+    seg.assign(4*n, 0);
+    lazy.assign(4*n, 0);
+    build(0, 0, n-1);
+
+    while (q--) {
+        int type;
+        cin >> type;
+        if (type == 1) {            // 1 idx val    -> arr[idx] = val
+            int idx;
+            long long val;
+            cin >> idx >> val;
+            pointUpdate(0, 0, n-1, idx, val);
+        } else if (type == 2) {     // 2 l r val    -> add val to arr[l..r]
+            int l, r;
+            long long val;
+            cin >> l >> r >> val;
+            rangeUpdate(0, 0, n-1, l, r, val);
+        } else if (type == 3) {     // 3 l r        -> print sum of arr[l..r]
+            int l, r;
+            cin >> l >> r;
+            cout << query(0, 0, n-1, l, r) << '\n';
+        }
+    }
+    return 0;
+}
+// T.C : O(log(n)) per query/update
+// S.C : O(4*n)
+*/
